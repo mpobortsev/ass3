@@ -1,0 +1,277 @@
+CREATE DATABASE work1;
+USE work1;
+
+SELECT * FROM cart_spesification;
+SELECT * FROM cart_type;
+SELECT * FROM branches;
+SELECT * FROM consultants;
+SELECT * FROM card_info;
+SELECT * FROM user;
+SELECT * FROM transactions_full_info;
+SELECT * FROM transactions;
+SELECT * FROM online_info;
+SELECT * FROM offline_info;
+SELECT * FROM salary_info;
+SELECT * FROM consultants_rating;
+
+
+--дані є
+CREATE TABLE cart_spesification (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Унікальний ідентифікатор специфікації картки',
+    cart_type VARCHAR(255) COMMENT 'Тип картки',
+    credit_limit INT COMMENT 'Кредитний ліміт',
+    NFC BOOLEAN COMMENT 'Підтримка NFC',
+    online_banking BOOLEAN COMMENT 'Підтримка онлайн-банкінгу',
+    cashback_per INT COMMENT 'Процент кешбеку',
+    personal_manager BOOLEAN COMMENT 'Особистий менеджер',
+    airport_lounge BOOLEAN COMMENT 'Доступ до лаунж-зон аеропорту'
+) COMMENT 'Таблиця для зберігання специфікацій карток';
+
+INSERT INTO cart_spesification (id, cart_type, credit_limit, NFC, online_banking, cashback_per, personal_manager, airport_lounge) VALUES
+('1', 'Classic', 20000, FALSE, TRUE, 2, FALSE, FALSE),
+('2', 'Gold', 50000, TRUE, TRUE, 5, FALSE, FALSE),
+('3', 'Platinum',100000, TRUE, TRUE, 7, TRUE, FALSE),
+('4', 'Black', 150000, TRUE, TRUE, 10, TRUE, TRUE);
+
+--дані є
+CREATE TABLE cart_type (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Унікальний ідентифікатор типу картки',
+    spesification_id INT COMMENT 'Ідентифікатор специфікації картки',
+    cart_type VARCHAR(255) COMMENT 'Тип картки',
+    FOREIGN KEY (spesification_id) REFERENCES cart_spesification(id)
+) COMMENT 'Таблиця для зберігання типів карток';
+
+
+INSERT INTO cart_type (id, spesification_id, cart_type)
+VALUES
+('1', '1', 'Classic'),
+('2', '2', 'Gold'),
+('3', '3', 'Platinum'),
+('4', '4', 'Black');
+
+--дані є
+CREATE TABLE branches (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Унікальний ідентифікатор відділення',
+    branch_num VARCHAR(255) COMMENT 'Номер відділення',
+    city VARCHAR(255) COMMENT 'Місто, де розташоване відділення',
+    branch_type VARCHAR(255) COMMENT 'Тип відділення'
+) COMMENT 'Таблиця для зберігання інформації про відділення';
+
+--дані є
+CREATE TABLE consultants (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Унікальний ідентифікатор консультанта',
+    first_name VARCHAR(255) COMMENT 'Ім’я консультанта',
+    second_name VARCHAR(255) COMMENT 'Прізвище консультанта',
+    age INT COMMENT 'Вік консультанта',
+    gender VARCHAR(50) COMMENT 'Стать консультанта',
+    gmail VARCHAR(50) COMMENT 'Електронна пошта консультанта',
+    phone_num VARCHAR(100) COMMENT 'Номер телефону консультанта'
+) COMMENT 'Таблиця для зберігання інформації про консультантів';
+
+--дані є
+CREATE TABLE card_info (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Унікальний ідентифікатор картки',
+    cart_type_id INT COMMENT 'Ідентифікатор типу картки',
+    consultant_id INT COMMENT 'Ідентифікатор консультанта',
+    branch_id INT COMMENT 'Ідентифікатор відділення',
+    date_creation DATE COMMENT 'Дата створення картки',
+    time_creation TIME COMMENT 'Час створення картки',
+    geo_creation VARCHAR(255) COMMENT 'Місце створення картки',
+    FOREIGN KEY (cart_type_id) REFERENCES cart_type(id),
+    FOREIGN KEY (consultant_id) REFERENCES consultants(id),
+    FOREIGN KEY (branch_id) REFERENCES branches(id)
+) COMMENT 'Таблиця для зберігання інформації про картки користувачів';
+
+--дані є
+CREATE TABLE user (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Унікальний ідентифікатор користувача',
+    card_info_id INT COMMENT 'Ідентифікатор картки користувача',
+    first_name VARCHAR(255) COMMENT 'Ім’я користувача',
+    second_name VARCHAR(255) COMMENT 'Прізвище користувача',
+    age INT COMMENT 'Вік користувача',
+    gender VARCHAR(50) COMMENT 'Стать користувача',
+    FOREIGN KEY (card_info_id) REFERENCES card_info(id)
+) COMMENT 'Таблиця для зберігання інформації про користувачів';
+
+--дані є
+CREATE TABLE transactions_full_info (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Унікальний ідентифікатор повної інформації про транзакцію',
+    user_id INT COMMENT 'Ідентифікатор користувача',
+    tr_date DATE COMMENT 'Дата транзакції',
+    tr_time TIME COMMENT 'Час транзакції',
+    tr_geo VARCHAR(255) COMMENT 'Геолокація транзакції',
+    tr_type VARCHAR(255) COMMENT 'Тип транзакції',
+    amount_usd INT COMMENT 'Сума транзакції в доларах США',
+    FOREIGN KEY (user_id) REFERENCES user(id)
+) COMMENT 'Таблиця для збереження повної інформації про кожну транзакцію';
+
+--дані є
+CREATE TABLE transactions (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Унікальний ідентифікатор транзакції',
+    user_id INT COMMENT 'Ідентифікатор користувача',
+    tr_full_info_id INT COMMENT 'Ідентифікатор повної інформації про транзакцію',
+    FOREIGN KEY (user_id) REFERENCES user(id),
+    FOREIGN KEY (tr_full_info_id) REFERENCES transactions_full_info(id)
+) COMMENT 'Таблиця для зберігання інформації про транзакції';
+
+--дані є
+CREATE TABLE online_info (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Унікальний ідентифікатор інформації про онлайн-транзакцію',
+    tr_full_info_id INT COMMENT 'Ідентифікатор повної інформації про транзакцію',
+    website VARCHAR(255) COMMENT 'Вебсайт, де була здійснена покупка',
+    purchase_type VARCHAR(255) COMMENT 'Тип покупки',
+    FOREIGN KEY (tr_full_info_id) REFERENCES transactions_full_info(id)
+) COMMENT 'Таблиця для зберігання інформації про онлайн-транзакції';
+
+--дані є
+CREATE TABLE offline_info (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Унікальний ідентифікатор інформації про офлайн-транзакцію',
+    tr_full_info_id INT COMMENT 'Ідентифікатор повної інформації про транзакцію',
+    branch_id INT COMMENT 'Ідентифікатор відділення',
+    consultant_id INT COMMENT 'Ідентифікатор консультанта',
+    purchase_type VARCHAR(255) COMMENT 'Тип покупки',
+    FOREIGN KEY (tr_full_info_id) REFERENCES transactions_full_info(id),
+    FOREIGN KEY (branch_id) REFERENCES branches(id),
+    FOREIGN KEY (consultant_id) REFERENCES consultants(id)
+) COMMENT 'Таблиця для зберігання інформації про офлайн-транзакції';
+
+
+CREATE TABLE salary_info (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Унікальний ідентифікатор інформації про зарплату',
+    consultant_id INT COMMENT 'Ідентифікатор консультанта',
+    salary INT COMMENT 'Зарплата консультанта',
+    FOREIGN KEY (consultant_id) REFERENCES consultants(id)
+) COMMENT 'Таблиця для зберігання інформації про зарплати консультантів';
+
+CREATE TABLE consultants_rating (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Унікальний ідентифікатор рейтингу',
+    consultant_id INT COMMENT 'Ідентифікатор консультанта',
+    user_id INT COMMENT 'Ідентифікатор користувача',
+    rate INT CHECK (rate >= 1 AND rate <= 5) COMMENT 'Рейтинг консультанта',
+    FOREIGN KEY (consultant_id) REFERENCES consultants(id),
+    FOREIGN KEY (user_id) REFERENCES user(id)
+) COMMENT 'Таблиця для зберігання рейтингів консультантів';
+
+
+--------------------------------------
+
+CREATE INDEX ind_tr_type ON transactions_full_info(tr_type);
+DROP INDEX ind_tr_type ON transactions_full_info;
+
+EXPLAIN ANALYZE
+Select count(*)
+from transactions_full_info
+WHERE tr_type = "purchase";
+
+-> Aggregate: count(0)  (cost=66666 rows=1) (actual time=219..219 rows=1 loops=1)
+    -> Filter: (transactions_full_info.tr_type = 'purchase')  (cost=60689 rows=59769) (actual time=6.53..215 rows=149985 loops=1)
+        -> Table scan on transactions_full_info  (cost=60689 rows=597688) (actual time=6.52..186 rows=600000 loops=1)
+
+        
+-> Aggregate: count(0)  (cost=97125 rows=1) (actual time=54.3..54.3 rows=1 loops=1)
+    -> Covering index lookup on transactions_full_info using ind_tr_type (tr_type='purchase')  (cost=67241 rows=298844) (actual time=0.172..48.1 rows=149985 loops=1)
+
+
+--------------------------------------
+
+CREATE INDEX ind_age ON user(age);
+CREATE INDEX ind_gender ON user(gender);
+DROP INDEX ind_age ON user;
+DROP INDEX ind_gender ON user;
+
+
+EXPLAIN ANALYZE
+SELECT u.gender, count(*)
+FROM transactions AS t
+JOIN transactions_full_info AS trf ON t.tr_full_info_id = trf.id
+JOIN user AS u ON t.user_id = u.id
+WHERE u.age > 30
+GROUP by u.gender;
+
+-> Table scan on <temporary>  (actual time=1572..1572 rows=2 loops=1)
+    -> Aggregate using temporary table  (actual time=1572..1572 rows=2 loops=1)
+        -> Nested loop inner join  (cost=250140 rows=284872) (actual time=0.238..1468 rows=492779 loops=1)
+            -> Nested loop inner join  (cost=150435 rows=284872) (actual time=0.224..939 rows=492779 loops=1)
+                -> Filter: (u.age > 30)  (cost=50730 rows=165809) (actual time=0.169..94.7 rows=410474 loops=1)
+                    -> Table scan on u  (cost=50730 rows=497478) (actual time=0.167..77.5 rows=500000 loops=1)
+                -> Filter: (t.tr_full_info_id is not null)  (cost=0.43 rows=1.72) (actual time=0.00174..0.00197 rows=1.2 loops=410474)
+                    -> Index lookup on t using idx_transactions_user_id (user_id=u.id)  (cost=0.43 rows=1.72) (actual time=0.00168..0.00186 rows=1.2 loops=410474)
+            -> Single-row covering index lookup on trf using PRIMARY (id=t.tr_full_info_id)  (cost=0.25 rows=1) (actual time=972e-6..989e-6 rows=1 loops=492779)
+
+
+            -> Table scan on <temporary>  (actual time=1430..1430 rows=2 loops=1)
+    -> Aggregate using temporary table  (actual time=1430..1430 rows=2 loops=1)
+        -> Nested loop inner join  (cost=405014 rows=299563) (actual time=2.61..1329 rows=492779 loops=1)
+            -> Nested loop inner join  (cost=270326 rows=299563) (actual time=1.92..782 rows=492779 loops=1)
+                -> Filter: ((t.user_id is not null) and (t.tr_full_info_id is not null))  (cost=60261 rows=599126) (actual time=1.87..128 rows=600000 loops=1)
+                    -> Table scan on t  (cost=60261 rows=599126) (actual time=1.87..105 rows=600000 loops=1)
+                -> Filter: (u.age > 30)  (cost=0.251 rows=0.5) (actual time=971e-6..0.00101 rows=0.821 loops=600000)
+                    -> Single-row index lookup on u using PRIMARY (id=t.user_id)  (cost=0.251 rows=1) (actual time=896e-6..913e-6 rows=1 loops=600000)
+            -> Single-row covering index lookup on trf using PRIMARY (id=t.tr_full_info_id)  (cost=0.35 rows=1) (actual time=0.00101..0.00103 rows=1 loops=492779)
+            
+--------------------------------------
+
+CREATE USER 'maneger'@'localhost' IDENTIFIED BY '123456Aa@';
+GRANT SELECT ON consultants TO 'maneger'@'localhost';
+GRANT SELECT ON salary_info TO 'maneger'@'localhost';
+GRANT SELECT ON consultants_rating TO 'maneger'@'localhost';
+SHOW GRANTS FOR 'maneger'@'localhost';
+
+CREATE USER 'analyst'@'localhost' IDENTIFIED BY '123456Aa@';
+GRANT SELECT ON user TO 'analyst'@'localhost';
+GRANT SELECT ON transactions_full_info TO 'analyst'@'localhost';
+GRANT SELECT ON transactions TO 'analyst'@'localhost';
+GRANT SELECT ON online_info TO 'analyst'@'localhost';
+GRANT SELECT ON offline_info TO 'analyst'@'localhost';
+SHOW GRANTS FOR 'analyst'@'localhost';
+
+CREATE USER 'communicator'@'localhost' IDENTIFIED BY '123456Aa@';
+GRANT SELECT ON user TO 'communicator'@'localhost';
+GRANT SELECT ON cart_spesification TO 'communicator'@'localhost';
+GRANT SELECT ON cart_type TO 'communicator'@'localhost';
+GRANT SELECT ON card_info TO 'communicator'@'localhost';
+GRANT SELECT ON user TO 'communicator'@'localhost';
+GRANT SELECT ON transactions TO 'communicator'@'localhost';
+SHOW GRANTS FOR 'communicator'@'localhost';
+            
+--------------------------------------
+
+CREATE VIEW transaction_view AS
+SELECT t.id,  
+	t.user_id, 
+	u.first_name, 
+    u.second_name, 
+    u.age, 
+    u.gender, 
+    trf.tr_date, 
+    trf.tr_type, 
+    trf.amount_usd 
+FROM transactions AS t
+JOIN transactions_full_info AS trf ON t.tr_full_info_id = trf.id
+JOIN user AS u ON t.user_id = u.id;
+
+SELECT * FROM transaction_view;
+
+--------------------------------------
+
+CREATE PROCEDURE UpdateSalary(IN consultant_id INT, IN bonus INT)
+BEGIN
+    UPDATE salary_info
+    SET salary = salary + bonus
+    WHERE consultant_id = consultant_id;
+END
+
+SELECT * FROM salary_info
+Where consultant_id =1;
+
+CALL UpdateSalary(1, 6000)
+--------------------------------------
+
+CREATE TRIGGER update_salary
+AFTER INSERT ON consultants
+FOR EACH ROW
+BEGIN
+    UPDATE salary_info
+    SET salary = salary + 500
+    WHERE consultant_id = NEW.id;
+END
